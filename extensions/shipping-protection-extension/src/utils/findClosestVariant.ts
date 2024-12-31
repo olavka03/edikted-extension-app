@@ -11,8 +11,7 @@ export const findClosestVariant = (
   const sortedVariants = variants
     .map((variant) => ({
       ...variant,
-      numericPrice: parseFloat(variant.title),
-      // numericPrice: parseFloat(variant.price.amount),
+      numericPrice: parseFloat(variant.price.amount),
     }))
     .sort((a, b) => a.numericPrice - b.numericPrice);
 

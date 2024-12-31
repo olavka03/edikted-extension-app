@@ -13,7 +13,7 @@ import {
   Banner,
   Image,
   useApi,
-  useBuyerJourney,
+  useCheckoutToken,
 } from '@shopify/ui-extensions-react/checkout';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -28,10 +28,7 @@ import { formatPrice } from './utils/priceFormatter';
 import { parseShopifyGID } from './utils/parseShopifyGID';
 import { findClosestVariant } from './utils/findClosestVariant';
 import { Attribute } from '@shopify/ui-extensions/src/surfaces/checkout';
-import {
-  useLocalizationCountry,
-  useLocalizationMarket,
-} from '@shopify/ui-extensions-react/checkout';
+import { useLocalizationCountry } from '@shopify/ui-extensions-react/checkout';
 
 function ShippingProtectionExtension() {
   const cartLines = useCartLines();
@@ -96,6 +93,11 @@ function ShippingProtectionExtension() {
       shippingProtectionPrice,
     );
 
+    console.debug({
+      closestVariant,
+      shippingProtectionVariants,
+      shippingProtectionPrice,
+    });
     return closestVariant;
   }, [shippingProtectionPrice, shippingProtection]);
 
@@ -299,8 +301,6 @@ function ShippingProtectionExtension() {
         `,
           { variables: { id: productId, country: countryCode } },
         );
-
-        console.log({ product });
 
         if (errors?.length > 0) {
           const [firstError] = errors;
