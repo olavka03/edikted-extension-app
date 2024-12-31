@@ -1,0 +1,47 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "shipping-protection-extension"
+handle = "shipping-protection-extension"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.tsx"
+target = "purchase.checkout.shipping-option-list.render-after"
+
+[extensions.capabilities]
+api_access = true
+network_access = true
+block_progress = true
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "shipping_protection_product_id"
+type = "single_line_text_field"
+name = "Shipping Protection Product Id"
+description = "Enter a Shipping protection id in format 'gid://shopify/Product/812477113451' or just '812477113451'"
+[[extensions.settings.fields]]
+key = "widget_title"
+type = "single_line_text_field"
+name = "Widget Title"
+description = "Enter a title for the widget"
+[[extensions.settings.fields]]
+key = "widget_description"
+type = "single_line_text_field"
+name = "Widget Description"
+description = "Enter a description for the widget by selecting the {{amount}} placeholder to set the price"
+[[extensions.settings.fields]]
+key = "widget_warning"
+type = "single_line_text_field"
+name = "Widget Warning"
+description = "Enter a warning text for the widget when it does not selected"
+[[extensions.settings.fields]]
+key = "shipping_protection_disclaimer"
+type = "single_line_text_field"
+name = "Shipping Protection Disclaimer"
+description = "Enter a disclaimer for the Shipping Protection in format '{disclaimerKey}: {disclaimerValue}' or just a dsiclaimer string"
+[[extensions.settings.fields]]
+key = "shipping_protection_percantage"
+type = "number_decimal"
+name = "Shipping Protection Percantage"
+description = "Enter a Percantage for shipping protection"
