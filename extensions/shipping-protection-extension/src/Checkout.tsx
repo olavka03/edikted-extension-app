@@ -13,7 +13,6 @@ import {
   Banner,
   Image,
   useApi,
-  useCheckoutToken,
 } from '@shopify/ui-extensions-react/checkout';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -347,8 +346,7 @@ function ShippingProtectionExtension() {
             <Image
               borderRadius="base"
               loading="lazy"
-              source="https://cdn.shopify.com/s/files/1/0600/9035/1851/products/demo-upload.png?v=1686746074"
-              // source={shippingProtection?.media?.nodes?.[0]?.image?.url}
+              source={shippingProtection?.media?.nodes?.[0]?.image?.url}
               fit="contain"
             />
           </View>
