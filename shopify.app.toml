@@ -1,25 +1,23 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "816fd4c2b1ab252447af310a05b41eeb"
-application_url = "https://edikted-staging.myshopify.com/apps/shipping-protection-extension-split"
+client_id = "e7d6d0cc715f68fd82ce73c9d0dd8464"
+application_url = "https://shopify.dev/apps/default-app-home"
 embedded = true
-name = "shipping-protection-extension"
-handle = "shipping-protection-extension-split"
+name = "shipping-protection-edikted"
+handle = "shipping-protection-edikted"
+
+[build]
+include_config_on_deploy = true
 
 [webhooks]
 api_version = "2024-10"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_inventory,read_orders,read_products,write_inventory,write_orders,write_products"
+scopes = "read_inventory,read_products,write_inventory,write_products"
 
 [auth]
-redirect_urls = [
-  "https://edikted-staging.myshopify.com/apps/shipping-protection-extension-split/api/auth"
-]
+redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
 
 [pos]
-embedded = true
-
-[build]
-include_config_on_deploy = true
+embedded = false

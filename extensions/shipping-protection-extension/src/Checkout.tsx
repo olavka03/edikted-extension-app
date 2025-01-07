@@ -40,7 +40,7 @@ function ShippingProtectionExtension() {
   const [shippingProtection, setShippingProtection] =
     useState<ProductData | null>(null);
   const [isSelectedShippingProtetion, setIsSelectedShippingProtetion] =
-    useState(false);
+    useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const firstRender = useRef(true);
@@ -133,9 +133,7 @@ function ShippingProtectionExtension() {
     );
 
     const appearance = loading ? 'subdued' : 'info';
-    const hasWarning = firstRender.current
-      ? !isShippingProtectionExist()
-      : !isSelectedShippingProtetion;
+    const hasWarning = !isSelectedShippingProtetion;
 
     return (
       <BlockStack padding="extraTight" spacing="none">
@@ -323,6 +321,22 @@ function ShippingProtectionExtension() {
 
     getShippingProtectionProdutData();
   }, [settings, countryCode]);
+
+  useEffect(() => {
+    if (!closestShippingProtectionVariant || !firstRender.current) {
+      return;
+    }
+
+    const initShippingProtection = async () => {
+      if (isShippingProtectionExist()) {
+        await removeShippingProtectionFromCart();
+      }
+
+      await toggleShippingProtection(true);
+    };
+
+    initShippingProtection();
+  }, [toggleShippingProtection, closestShippingProtectionVariant]);
 
   return (
     <BlockStack>
