@@ -7,7 +7,7 @@ type = "ui_extension"
 
 [[extensions.targeting]]
 module = "./src/Checkout.tsx"
-target = "purchase.checkout.shipping-option-list.render-after"
+target = "purchase.checkout.delivery-address.render-after"
 
 [extensions.capabilities]
 api_access = true
@@ -41,7 +41,7 @@ type = "single_line_text_field"
 name = "Shipping Protection Disclaimer"
 description = "Enter a disclaimer for the Shipping Protection in format '{disclaimerKey}: {disclaimerValue}' or just a dsiclaimer string"
 [[extensions.settings.fields]]
-key = "shipping_protection_percantage"
+key = "shipping_protection_percentage"
 type = "number_decimal"
-name = "Shipping Protection Percantage"
-description = "Enter a Percantage for shipping protection"
+name = "Shipping Protection Percentage"
+description = "Enter a Percentage for shipping protection"

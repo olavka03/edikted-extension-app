@@ -145,6 +145,8 @@ export type ProductData = {
 export enum ShippingProtectionDefaultValues {
   Title = 'Shipping Protection',
   Tag = 'shipping-protection',
+  Type = 'Insurance',
+  Vendor = 'NVD-Protection',
   OptionName = 'ID',
 }
 
@@ -153,7 +155,7 @@ export interface CustomExtensionSettings extends ExtensionSettings {
   widget_title: string;
   widget_description: string;
   widget_warning: string;
-  shipping_protection_percantage: string;
+  shipping_protection_percentage: string;
   shipping_protection_disclaimer: string;
 }
 
@@ -165,7 +167,7 @@ export enum ShopifyGIDType {
 export enum ExtensionDefaultSettings {
   WidgetTitle = 'Shipping Protection',
   WidgetDescription = 'Our Delivery Guarantee, convering losses or theft during transit for {{amount}}',
-  ShippingProtectionPercantage = 1.5,
+  ShippingProtectionPercentage = 1.5,
   ShippingProtectionDisclaimer = 'Disclaimer: This is an optional additional service for expedited replacements and is not a shipping fee',
   ShippingProtectionWarning = 'By Deselecting Shipping Protection, we will not be liable for lost or stolen packages.',
 }

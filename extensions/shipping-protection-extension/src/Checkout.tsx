@@ -36,14 +36,25 @@ function ShippingProtectionExtension() {
   const settings = useSettings<CustomExtensionSettings>();
   const applyCartLinesChange = useApplyCartLinesChange();
   const { isoCode: countryCode } = useLocalizationCountry();
-
   const [shippingProtection, setShippingProtection] =
     useState<ProductData | null>(null);
-  const [isSelectedShippingProtetion, setIsSelectedShippingProtetion] =
+  const [isSelectedShippingProtection, setIsSelectedShippingProtection] =
     useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const firstRender = useRef(true);
+  const hasInitialized = useRef(false);
+  // const settings: CustomExtensionSettings = {
+  //   widget_title: 'Shipping Protection',
+  //   widget_description:
+  //     'Our Delivery Guarantee, covering losses or theft during transit for {{amount}}',
+  //   widget_warning:
+  //     'By Deselecting Shipping Protection, we will not be liable for lost or stolen packages.',
+  //   shipping_protection_disclaimer:
+  //     'Disclaimer: This is an optional additional service for expedited replacements and is not a shipping fee.',
+  //   shipping_protection_percentage: '1.5',
+  //   shipping_protection_product_id: '8890291683567',
+  // };
 
   const isCustomizeCheckoutPage = useMemo(
     () => extension.editor?.type === 'checkout',
@@ -58,7 +69,8 @@ function ShippingProtectionExtension() {
     const cartLinesTotalPrice = cartLines.reduce((acc, lineItem) => {
       const isShippingProtectionLineItem =
         lineItem.merchandise.product.productType ===
-        ShippingProtectionDefaultValues.Tag;
+          ShippingProtectionDefaultValues.Type ||
+        lineItem.merchandise.title === ShippingProtectionDefaultValues.Title;
 
       const currentLineItemPrice = !isShippingProtectionLineItem
         ? lineItem.cost.totalAmount.amount
@@ -69,12 +81,12 @@ function ShippingProtectionExtension() {
       return acc;
     }, 0);
 
-    const percantage =
-      (+settings.shipping_protection_percantage ||
-        ExtensionDefaultSettings.ShippingProtectionPercantage) / 100;
+    const percentage =
+      (+settings.shipping_protection_percentage ||
+        ExtensionDefaultSettings.ShippingProtectionPercentage) / 100;
 
     const shippingProtectionPrice = Number(
-      (cartLinesTotalPrice * percantage).toFixed(2),
+      (cartLinesTotalPrice * percentage).toFixed(2),
     );
 
     return shippingProtectionPrice;
@@ -97,15 +109,18 @@ function ShippingProtectionExtension() {
       shippingProtectionVariants,
       shippingProtectionPrice,
     });
+
     return closestVariant;
   }, [shippingProtectionPrice, shippingProtection]);
 
   const isShippingProtectionExist = useCallback(() => {
     return cartLines.some(
       ({ merchandise }) =>
-        merchandise.product.productType ===
-          ShippingProtectionDefaultValues.Tag ||
-        merchandise.title === ShippingProtectionDefaultValues.Title,
+        merchandise.product.id ===
+        parseShopifyGID(
+          settings.shipping_protection_product_id,
+          ShopifyGIDType.Product,
+        ),
     );
   }, [cartLines]);
 
@@ -129,11 +144,11 @@ function ShippingProtectionExtension() {
       isoCode,
       !isCustomizeCheckoutPage
         ? Number(closestShippingProtectionVariant.price.amount)
-        : ExtensionDefaultSettings.ShippingProtectionPercantage,
+        : ExtensionDefaultSettings.ShippingProtectionPercentage,
     );
 
     const appearance = loading ? 'subdued' : 'info';
-    const hasWarning = !isSelectedShippingProtetion;
+    const hasWarning = !isSelectedShippingProtection;
 
     return (
       <BlockStack padding="extraTight" spacing="none">
@@ -171,7 +186,7 @@ function ShippingProtectionExtension() {
     isoCode,
     settings,
     loading,
-    isSelectedShippingProtetion,
+    isSelectedShippingProtection,
     closestShippingProtectionVariant,
   ]);
 
@@ -179,8 +194,8 @@ function ShippingProtectionExtension() {
     const shippingProtectionLineItems = cartLines.filter(
       ({ merchandise }) =>
         merchandise.product.productType ===
-          ShippingProtectionDefaultValues.Tag ||
-        merchandise.title === ShippingProtectionDefaultValues.Title,
+          ShippingProtectionDefaultValues.Type ||
+        merchandise.product.vendor === ShippingProtectionDefaultValues.Vendor,
     );
 
     const cartChanges = shippingProtectionLineItems.map(({ id, quantity }) => ({
@@ -252,7 +267,7 @@ function ShippingProtectionExtension() {
   );
 
   useEffect(() => {
-    const getShippingProtectionProdutData = async () => {
+    const getShippingProtectionProductData = async () => {
       const productId = parseShopifyGID(
         settings.shipping_protection_product_id,
         ShopifyGIDType.Product,
@@ -319,24 +334,31 @@ function ShippingProtectionExtension() {
       }
     };
 
-    getShippingProtectionProdutData();
+    getShippingProtectionProductData();
   }, [settings, countryCode]);
 
   useEffect(() => {
-    if (!closestShippingProtectionVariant || !firstRender.current) {
+    if (
+      !closestShippingProtectionVariant ||
+      !firstRender.current ||
+      hasInitialized.current
+    ) {
       return;
     }
 
+    hasInitialized.current = true;
+
     const initShippingProtection = async () => {
       if (isShippingProtectionExist()) {
-        await removeShippingProtectionFromCart();
+        return;
+        // await removeShippingProtectionFromCart();
       }
 
       await toggleShippingProtection(true);
     };
 
     initShippingProtection();
-  }, [toggleShippingProtection, closestShippingProtectionVariant]);
+  }, [closestShippingProtectionVariant]);
 
   return (
     <BlockStack>
@@ -345,7 +367,18 @@ function ShippingProtectionExtension() {
           <Heading level={2}>{settings.widget_title}</Heading>
         )}
         <InlineLayout
-          columns={['15%', 'fill', 'auto']}
+          columns={{
+            conditionals: [
+              {
+                conditions: { viewportInlineSize: { min: 'extraSmall' } },
+                value: ['25%', 'fill', 'auto'],
+              },
+              {
+                conditions: { viewportInlineSize: { min: 'small' } },
+                value: ['15%', 'fill', 'auto'],
+              },
+            ],
+          }}
           blockAlignment="center"
           border="base"
           borderRadius="base"
@@ -357,6 +390,14 @@ function ShippingProtectionExtension() {
             minBlockSize={60}
             maxBlockSize={60}
           >
+            {/* <Image
+              borderRadius="base"
+              loading="lazy"
+              source={
+                'https://cdn.shopify.com/s/files/1/0467/4148/7783/products/demo-upload.png?v=1687072917'
+              }
+              fit="contain"
+            /> */}
             <Image
               borderRadius="base"
               loading="lazy"
@@ -368,11 +409,11 @@ function ShippingProtectionExtension() {
           <View inlineAlignment="end" padding="extraTight">
             <Switch
               checked={isShippingProtectionExist()}
-              onChange={(isSelected: boolean) => {
-                setIsSelectedShippingProtetion(isSelected);
-                toggleShippingProtection(isSelected);
+              onChange={async (isSelected: boolean) => {
+                setIsSelectedShippingProtection(isSelected);
+                await toggleShippingProtection(isSelected);
               }}
-              accessibilityLabel="shipping-protetion-toggler"
+              accessibilityLabel="shipping-protection-toggler"
             />
           </View>
         </InlineLayout>
@@ -383,6 +424,6 @@ function ShippingProtectionExtension() {
 }
 
 export default reactExtension(
-  'purchase.checkout.shipping-option-list.render-after',
+  'purchase.checkout.delivery-address.render-after',
   () => <ShippingProtectionExtension />,
 );
