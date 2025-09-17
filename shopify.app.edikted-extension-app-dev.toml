@@ -6,10 +6,6 @@ embedded = true
 name = "edikted-extension-app"
 handle = "edikted-extension-app"
 
-[build]
-dev_store_url = "olavka-test-store.myshopify.com"
-include_config_on_deploy = true
-
 [webhooks]
 api_version = "2024-10"
 

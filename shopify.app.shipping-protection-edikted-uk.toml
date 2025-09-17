@@ -1,23 +1,23 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "e7d6d0cc715f68fd82ce73c9d0dd8464"
-name = "shipping-protection-edikted"
-handle = "shipping-protection-edikted"
+client_id = "9e6da3fdf667cc793631265f99871de0"
 application_url = "https://shopify.dev/apps/default-app-home"
 embedded = true
-
-[build]
-include_config_on_deploy = true
+name = "shipping-protection-edikted-uk"
+handle = "edikted-uk-extension-app"
 
 [webhooks]
-api_version = "2024-10"
+api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_inventory,read_products,write_inventory,write_products"
+scopes = "read_inventory,read_orders,read_products,write_inventory,write_orders,write_products"
 
 [auth]
 redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
 
 [pos]
 embedded = false
+
+[build]
+include_config_on_deploy = true

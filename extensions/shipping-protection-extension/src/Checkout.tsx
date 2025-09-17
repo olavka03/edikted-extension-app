@@ -13,18 +13,18 @@ import {
   Banner,
   Image,
   useApi,
+  useShippingAddress,
 } from '@shopify/ui-extensions-react/checkout';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
-  ShippingProtectionDefaultValues,
   CustomExtensionSettings,
   ExtensionDefaultSettings,
-  ShopifyGIDType,
   ProductData,
 } from './types';
 import { CartLineChange } from '@shopify/ui-extensions/checkout';
 import { formatPrice } from './utils/priceFormatter';
-import { parseShopifyGID } from './utils/parseShopifyGID';
+import { parseShopifyGID } from '../../../utils';
+import { ShopifyGIDType } from '../../../types';
 import { findClosestVariant } from './utils/findClosestVariant';
 import { Attribute } from '@shopify/ui-extensions/src/surfaces/checkout';
 import { useLocalizationCountry } from '@shopify/ui-extensions-react/checkout';
@@ -35,15 +35,17 @@ function ShippingProtectionExtension() {
   const { extension, query } = useApi();
   const settings = useSettings<CustomExtensionSettings>();
   const applyCartLinesChange = useApplyCartLinesChange();
+  const shippingAddress = useShippingAddress();
   const { isoCode: countryCode } = useLocalizationCountry();
-  const [shippingProtection, setShippingProtection] =
-    useState<ProductData | null>(null);
-  const [isSelectedShippingProtection, setIsSelectedShippingProtection] =
-    useState(true);
+  const [shippingProtection, setShippingProtection] = useState<ProductData | null>(null);
+  const [isSelectedShippingProtection, setIsSelectedShippingProtection] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const firstRender = useRef(true);
   const hasInitialized = useRef(false);
+
+  const isCaliforniaSelected = shippingAddress.provinceCode === 'CA'
+
   // const settings: CustomExtensionSettings = {
   //   widget_title: 'Shipping Protection',
   //   widget_description:
@@ -53,8 +55,9 @@ function ShippingProtectionExtension() {
   //   shipping_protection_disclaimer:
   //     'Disclaimer: This is an optional additional service for expedited replacements and is not a shipping fee.',
   //   shipping_protection_percentage: '1.5',
-  //   shipping_protection_product_id: '8890291683567',
+  //   shipping_protection_product_id: '8927072977135',
   // };
+
 
   const isCustomizeCheckoutPage = useMemo(
     () => extension.editor?.type === 'checkout',
@@ -68,9 +71,11 @@ function ShippingProtectionExtension() {
 
     const cartLinesTotalPrice = cartLines.reduce((acc, lineItem) => {
       const isShippingProtectionLineItem =
-        lineItem.merchandise.product.productType ===
-          ShippingProtectionDefaultValues.Type ||
-        lineItem.merchandise.title === ShippingProtectionDefaultValues.Title;
+        lineItem.merchandise.product.id ===
+        parseShopifyGID(
+          settings.shipping_protection_product_id,
+          ShopifyGIDType.Product,
+        );
 
       const currentLineItemPrice = !isShippingProtectionLineItem
         ? lineItem.cost.totalAmount.amount
@@ -193,9 +198,11 @@ function ShippingProtectionExtension() {
   const removeShippingProtectionFromCart = useCallback(async () => {
     const shippingProtectionLineItems = cartLines.filter(
       ({ merchandise }) =>
-        merchandise.product.productType ===
-          ShippingProtectionDefaultValues.Type ||
-        merchandise.product.vendor === ShippingProtectionDefaultValues.Vendor,
+        merchandise.product.id ===
+        parseShopifyGID(
+          settings.shipping_protection_product_id,
+          ShopifyGIDType.Product,
+        ),
     );
 
     const cartChanges = shippingProtectionLineItems.map(({ id, quantity }) => ({
@@ -203,6 +210,8 @@ function ShippingProtectionExtension() {
       id,
       quantity,
     }));
+
+    setIsSelectedShippingProtection(false)
 
     await Promise.all(
       cartChanges.map((cartChange) =>
@@ -223,6 +232,8 @@ function ShippingProtectionExtension() {
             ? disclaimerParts[0].trim()
             : disclaimerParts[1].trim(),
       };
+
+      setIsSelectedShippingProtection(true)
 
       await applyCartLinesChange({
         type: 'addCartLine',
@@ -338,6 +349,12 @@ function ShippingProtectionExtension() {
   }, [settings, countryCode]);
 
   useEffect(() => {
+    if (isCaliforniaSelected) {
+      void removeShippingProtectionFromCart();
+    }
+  }, [isCaliforniaSelected])
+
+  useEffect(() => {
     if (
       !closestShippingProtectionVariant ||
       !firstRender.current ||
@@ -350,8 +367,9 @@ function ShippingProtectionExtension() {
 
     const initShippingProtection = async () => {
       if (isShippingProtectionExist()) {
+        await removeShippingProtectionFromCart();
+
         return;
-        // await removeShippingProtectionFromCart();
       }
 
       await toggleShippingProtection(true);
@@ -359,6 +377,12 @@ function ShippingProtectionExtension() {
 
     initShippingProtection();
   }, [closestShippingProtectionVariant]);
+
+  useEffect(() => {
+    if (!isShippingProtectionExist()) {
+      setIsSelectedShippingProtection(false)
+    }
+  }, [cartLines])
 
   return (
     <BlockStack>
@@ -408,9 +432,8 @@ function ShippingProtectionExtension() {
           {generateWidgetDescription()}
           <View inlineAlignment="end" padding="extraTight">
             <Switch
-              checked={isShippingProtectionExist()}
+              checked={isSelectedShippingProtection}
               onChange={async (isSelected: boolean) => {
-                setIsSelectedShippingProtection(isSelected);
                 await toggleShippingProtection(isSelected);
               }}
               accessibilityLabel="shipping-protection-toggler"

@@ -1,0 +1,27 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "remove-product-extension"
+handle = "remove-product-extension"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.tsx"
+target = "purchase.checkout.cart-line-item.render-after"
+
+[extensions.capabilities]
+api_access = true
+network_access = true
+block_progress = true
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "shipping_protection_product_id"
+type = "single_line_text_field"
+name = "Shipping Protection Product Id"
+description = "Enter a Shipping protection id in format 'gid://shopify/Product/812477113451' or just '812477113451'"
+[[extensions.settings.fields]]
+key = "remove_product_button_text"
+type = "single_line_text_field"
+name = "Remove Product Button Text"
+description = "Enter a text for the remove product button"
