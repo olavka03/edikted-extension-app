@@ -368,8 +368,6 @@ function ShippingProtectionExtension() {
     const initShippingProtection = async () => {
       if (isShippingProtectionExist()) {
         await removeShippingProtectionFromCart();
-
-        return;
       }
 
       await toggleShippingProtection(true);
