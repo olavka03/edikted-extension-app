@@ -38,13 +38,11 @@ function ShippingProtectionExtension() {
   const shippingAddress = useShippingAddress();
   const { isoCode: countryCode } = useLocalizationCountry();
   const [shippingProtection, setShippingProtection] = useState<ProductData | null>(null);
-  const [isSelectedShippingProtection, setIsSelectedShippingProtection] = useState(true);
+  const [isSelectedShippingProtection, setIsSelectedShippingProtection] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const firstRender = useRef(true);
   const hasInitialized = useRef(false);
-
-  const isCaliforniaSelected = shippingAddress.provinceCode === 'CA'
 
   // const settings: CustomExtensionSettings = {
   //   widget_title: 'Shipping Protection',
@@ -349,12 +347,6 @@ function ShippingProtectionExtension() {
   }, [settings, countryCode]);
 
   useEffect(() => {
-    if (isCaliforniaSelected) {
-      void removeShippingProtectionFromCart();
-    }
-  }, [isCaliforniaSelected])
-
-  useEffect(() => {
     if (
       !closestShippingProtectionVariant ||
       !firstRender.current ||
@@ -368,8 +360,6 @@ function ShippingProtectionExtension() {
     const initShippingProtection = async () => {
       if (isShippingProtectionExist()) {
         await removeShippingProtectionFromCart();
-
-        return;
       }
 
       await toggleShippingProtection(true);
