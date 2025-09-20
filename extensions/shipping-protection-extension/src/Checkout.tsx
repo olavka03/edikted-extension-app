@@ -44,6 +44,9 @@ function ShippingProtectionExtension() {
   const firstRender = useRef(true);
   const hasInitialized = useRef(false);
 
+
+  const isGBSelected = shippingAddress.countryCode === 'GB'
+  
   // const settings: CustomExtensionSettings = {
   //   widget_title: 'Shipping Protection',
   //   widget_description:
@@ -362,17 +365,39 @@ function ShippingProtectionExtension() {
         await removeShippingProtectionFromCart();
       }
 
-      await toggleShippingProtection(true);
+      if (!isGBSelected) {
+        await toggleShippingProtection(true);
+      }
     };
 
     initShippingProtection();
-  }, [closestShippingProtectionVariant]);
+  }, [closestShippingProtectionVariant, isGBSelected]);
 
   useEffect(() => {
-    if (!isShippingProtectionExist()) {
-      setIsSelectedShippingProtection(false)
+    console.log({isGBSelected, hasInitialized: hasInitialized.current})
+    
+    if (!hasInitialized.current) {
+      return
     }
-  }, [cartLines])
+
+    const isExists = isShippingProtectionExist()
+
+    if (isGBSelected) {
+      if (isExists) {
+        void removeShippingProtectionFromCart()
+      }
+
+      return
+    }
+
+    if (isExists) {
+      void removeShippingProtectionFromCart().then(() => {
+        toggleShippingProtection(true)
+      })
+    } else {
+      void toggleShippingProtection(true) 
+    }
+  }, [isGBSelected])
 
   return (
     <BlockStack>
